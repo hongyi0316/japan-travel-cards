@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="description" content="日本旅遊中日翻譯小卡片 - 離線可用">
+  <meta name="theme-color" content="#0f0f1a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>日旅翻譯卡片</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🇯🇵</text></svg>">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0f0f1a;
+      --bg-secondary: #1a1a2e;
+      --bg-card: rgba(30, 30, 50, 0.85);
+      --bg-list: rgba(15, 15, 26, 0.98);
+      --text-primary: #ffffff;
+      --text-secondary: rgba(255, 255, 255, 0.7);
+      --accent-pink: #e94560;
+      --accent-gold: #f5a623;
+      --glass-border: rgba(255, 255, 255, 0.1);
+    }
+    .light-mode {
+      --bg-primary: #f5f5f7;
+      --bg-secondary: #ffffff;
+      --bg-card: rgba(255, 255, 255, 0.9);
+      --bg-list: rgba(245, 245, 247, 0.98);
+      --text-primary: #1a1a2e;
+      --text-secondary: rgba(26, 26, 46, 0.7);
+      --glass-border: rgba(0, 0, 0, 0.1);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { 
+      height: 100%; 
+      overflow: hidden;
+      touch-action: manipulation;
+    }
+    body {
+      font-family: 'Noto Sans TC', 'Noto Sans JP', -apple-system, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      transition: background 0.3s, color 0.3s;
+    }
+    .app {
+      display: flex;
+      height: 100%;
+      height: 100dvh;
+      position: relative;
+    }
+    /* 遮罩 */
+    .overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 90;
+    }
+    .overlay.show { display: block; }
+    /* 左側列表 */
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 240px;
+      background: var(--bg-list);
+      border-right: 1px solid var(--glass-border);
+      display: flex;
+      flex-direction: column;
+      z-index: 100;
+      transform: translateX(-100%);
+      transition: transform 0.3s ease;
+    }
+    .sidebar.open { transform: translateX(0); }
+    @media (min-width: 768px) {
+      .sidebar {
+        position: relative;
+        transform: translateX(0);
+        width: 220px;
+      }
+      .overlay { display: none !important; }
+      .menu-toggle { display: none !important; }
+    }
+    .sidebar-header {
+      padding: 16px;
+      border-bottom: 1px solid var(--glass-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 1rem;
+      font-weight: 700;
+    }
+    .logo-icon { font-size: 1.25rem; }
+    .close-sidebar {
+      display: none;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      color: var(--text-secondary);
+      cursor: pointer;
+    }
+    @media (max-width: 767px) {
+      .close-sidebar { display: block; }
+    }
+    .category-tabs {
+      display: flex;
+      padding: 8px;
+      gap: 4px;
+      border-bottom: 1px solid var(--glass-border);
+    }
+    .category-tab {
+      flex: 1;
+      padding: 10px 4px;
+      background: transparent;
+      border: 1px solid var(--glass-border);
+      border-radius: 10px;
+      color: var(--text-secondary);
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .category-tab.active {
+      background: var(--accent-pink);
+      color: #fff;
+      border-color: var(--accent-pink);
+    }
+    .card-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .card-list::-webkit-scrollbar { width: 3px; }
+    .card-list::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 2px; }
+    .card-item {
+      padding: 14px 12px;
+      margin-bottom: 4px;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card-item:active { transform: scale(0.98); }
+    .card-item.active {
+      background: var(--accent-pink);
+      color: #fff;
+      border-color: var(--accent-pink);
+    }
+    .card-item-text {
+      font-size: 0.95rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .card-item-fav {
+      font-size: 0.7rem;
+      opacity: 0;
+      flex-shrink: 0;
+    }
+    .card-item.favorited .card-item-fav { opacity: 1; }
+    /* 右側主區域 */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 12px;
+      padding-top: env(safe-area-inset-top, 12px);
+      padding-bottom: env(safe-area-inset-bottom, 12px);
+      overflow: hidden;
+      min-width: 0;
+    }
+    .main-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .menu-toggle {
+      background: var(--bg-card);
+      border: 1px solid var(--glass-border);
+      border-radius: 10px;
+      width: 44px;
+      height: 44px;
+      font-size: 1.3rem;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .search-container {
+      position: relative;
+      flex: 1;
+      min-width: 0;
+    }
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.9rem;
+      opacity: 0.5;
+    }
+    .search-input {
+      width: 100%;
+      padding: 12px 12px 12px 38px;
+      background: var(--bg-card);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      color: var(--text-primary);
+      font-size: 1rem;
+      font-family: inherit;
+    }
+    .search-input::placeholder { color: var(--text-secondary); }
+    .search-input:focus { outline: none; border-color: var(--accent-pink); }
+    .header-actions {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .icon-btn {
+      background: var(--bg-card);
+      border: 1px solid var(--glass-border);
+      border-radius: 10px;
+      width: 44px;
+      height: 44px;
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .icon-btn:active { transform: scale(0.95); }
+    .icon-btn.active { background: var(--accent-pink); border-color: var(--accent-pink); }
+    /* 卡片區域 */
+    .card-container {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      perspective: 1000px;
+      padding: 10px;
+      min-height: 0;
+    }
+    .card {
+      width: 100%;
+      max-width: 400px;
+      aspect-ratio: 3/2;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+    }
+    .card.flipped { transform: rotateY(180deg); }
+    .card-face {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: var(--bg-card);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+    }
+    .card-back { transform: rotateY(180deg); }
+    .zh-text {
+      font-size: clamp(1.5rem, 6vw, 2.5rem);
+      font-weight: 700;
+      text-align: center;
+      line-height: 1.3;
+    }
+    .hint {
+      position: absolute;
+      bottom: 16px;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+    .ja-text {
+      font-size: clamp(1.3rem, 5vw, 2rem);
+      font-weight: 700;
+      text-align: center;
+      line-height: 1.4;
+      color: var(--accent-pink);
+    }
+    .romaji-text {
+      margin-top: 12px;
+      font-size: clamp(0.9rem, 3vw, 1.1rem);
+      color: var(--text-secondary);
+      text-align: center;
+    }
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      color: var(--text-secondary);
+    }
+    .empty-icon { font-size: 2.5rem; }
+    /* 底部控制 */
+    .card-controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 16px 0;
+    }
+    .nav-btn {
+      background: var(--bg-card);
+      border: 1px solid var(--glass-border);
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      font-size: 1.2rem;
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .nav-btn:active { transform: scale(0.92); }
+    .favorite-btn {
+      background: var(--bg-card);
+      border: 1px solid var(--glass-border);
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      font-size: 1.3rem;
+      cursor: pointer;
+      transition: all 0.15s;
+      filter: grayscale(1) opacity(0.5);
+    }
+    .favorite-btn.active { 
+      filter: none; 
+      background: var(--accent-gold); 
+      border-color: var(--accent-gold); 
+    }
+    .favorite-btn.pop { transform: scale(1.15); }
+    .progress-text {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      min-width: 55px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="overlay"></div>
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <span class="logo-icon">🇯🇵</span>
+          <span>日旅翻譯卡片</span>
+        </div>
+        <button class="close-sidebar" aria-label="關閉">✕</button>
+      </div>
+      <nav class="category-tabs"></nav>
+      <div class="card-list"></div>
+    </aside>
+    <main class="main">
+      <div class="main-header">
+        <button class="menu-toggle" aria-label="開啟選單">☰</button>
+        <div class="search-container">
+          <span class="search-icon">🔍</span>
+          <input type="text" class="search-input" placeholder="搜尋..." autocomplete="off">
+        </div>
+        <div class="header-actions">
+          <button class="icon-btn fav-filter-btn" aria-label="只顯示收藏">📋</button>
+          <button class="icon-btn theme-toggle" aria-label="切換主題">☀️</button>
+        </div>
+      </div>
+      <div class="card-container">
+        <div class="card">
+          <div class="card-face card-front">
+            <span class="zh-text">載入中...</span>
+            <span class="hint">👆 點擊翻轉</span>
+          </div>
+          <div class="card-face card-back">
+            <span class="ja-text"></span>
+            <span class="romaji-text"></span>
+          </div>
+        </div>
+      </div>
+      <div class="card-controls">
+        <button class="nav-btn prev-btn" aria-label="上一張">←</button>
+        <span class="progress-text">1/20</span>
+        <button class="favorite-btn" aria-label="收藏">⭐</button>
+        <button class="nav-btn next-btn" aria-label="下一張">→</button>
+      </div>
+    </main>
+  </div>
+  <script>
+    const cardsData = {
+      dining: {
+        name: '餐飲', icon: '🍜',
+        cards: [
+          { zh: '請給我菜單', ja: 'メニューをください', romaji: 'Menyuu wo kudasai' },
+          { zh: '我要點餐', ja: '注文をお願いします', romaji: 'Chuumon wo onegai shimasu' },
+          { zh: '推薦什麼？', ja: 'おすすめは何ですか？', romaji: 'Osusume wa nan desu ka?' },
+          { zh: '這個是什麼？', ja: 'これは何ですか？', romaji: 'Kore wa nan desu ka?' },
+          { zh: '請給我這個', ja: 'これをください', romaji: 'Kore wo kudasai' },
+          { zh: '我要一份', ja: '一つください', romaji: 'Hitotsu kudasai' },
+          { zh: '我要兩份', ja: '二つください', romaji: 'Futatsu kudasai' },
+          { zh: '不要辣', ja: '辛くしないでください', romaji: 'Karaku shinaide kudasai' },
+          { zh: '我對○○過敏', ja: '○○アレルギーがあります', romaji: '○○ arerugii ga arimasu' },
+          { zh: '請結帳', ja: 'お会計をお願いします', romaji: 'Okaikei wo onegai shimasu' },
+          { zh: '可以刷卡嗎？', ja: 'カードは使えますか？', romaji: 'Kaado wa tsukaemasu ka?' },
+          { zh: '可以分開付嗎？', ja: '別々に払えますか？', romaji: 'Betsubetsu ni haraemasu ka?' },
+          { zh: '請給我收據', ja: 'レシートをください', romaji: 'Reshiito wo kudasai' },
+          { zh: '好吃！', ja: 'おいしい！', romaji: 'Oishii!' },
+          { zh: '我吃飽了', ja: 'お腹いっぱいです', romaji: 'Onaka ippai desu' },
+          { zh: '請給我水', ja: 'お水をください', romaji: 'Omizu wo kudasai' },
+          { zh: '外帶', ja: '持ち帰り', romaji: 'Mochikaeri' },
+          { zh: '內用', ja: '店内で', romaji: 'Tennai de' },
+          { zh: '有素食嗎？', ja: 'ベジタリアンメニューはありますか？', romaji: 'Bejitarian menyuu wa arimasu ka?' },
+          { zh: '請等一下', ja: '少々お待ちください', romaji: 'Shoushou omachi kudasai' }
+        ]
+      },
+      shopping: {
+        name: '購物', icon: '🛍️',
+        cards: [
+          { zh: '多少錢？', ja: 'いくらですか？', romaji: 'Ikura desu ka?' },
+          { zh: '可以試穿嗎？', ja: '試着できますか？', romaji: 'Shichaku dekimasu ka?' },
+          { zh: '有別的顏色嗎？', ja: '他の色はありますか？', romaji: 'Hoka no iro wa arimasu ka?' },
+          { zh: '有大一點的嗎？', ja: 'もっと大きいのはありますか？', romaji: 'Motto ookii no wa arimasu ka?' },
+          { zh: '有小一點的嗎？', ja: 'もっと小さいのはありますか？', romaji: 'Motto chiisai no wa arimasu ka?' },
+          { zh: '我要這個', ja: 'これにします', romaji: 'Kore ni shimasu' },
+          { zh: '我只是看看', ja: '見ているだけです', romaji: 'Mite iru dake desu' },
+          { zh: '可以便宜一點嗎？', ja: '安くなりますか？', romaji: 'Yasuku narimasu ka?' },
+          { zh: '可以退稅嗎？', ja: '免税できますか？', romaji: 'Menzei dekimasu ka?' },
+          { zh: '請幫我退稅', ja: '免税手続きをお願いします', romaji: 'Menzei tetsuzuki wo onegai shimasu' },
+          { zh: '這是免稅品', ja: 'これは免税品です', romaji: 'Kore wa menzeihin desu' },
+          { zh: '護照在這裡', ja: 'パスポートはこちらです', romaji: 'Pasupooto wa kochira desu' },
+          { zh: '可以用現金嗎？', ja: '現金で払えますか？', romaji: 'Genkin de haraemasu ka?' },
+          { zh: '請給我袋子', ja: '袋をください', romaji: 'Fukuro wo kudasai' },
+          { zh: '不用袋子', ja: '袋は要りません', romaji: 'Fukuro wa irimasen' },
+          { zh: '請幫我包裝', ja: '包装してください', romaji: 'Housou shite kudasai' },
+          { zh: '這是禮物', ja: 'プレゼント用です', romaji: 'Purezento you desu' },
+          { zh: '營業到幾點？', ja: '何時まで営業していますか？', romaji: 'Nanji made eigyou shite imasu ka?' }
+        ]
+      },
+      hotel: {
+        name: '住宿', icon: '🏨',
+        cards: [
+          { zh: '我有預約', ja: '予約があります', romaji: 'Yoyaku ga arimasu' },
+          { zh: '我要辦理入住', ja: 'チェックインをお願いします', romaji: 'Chekkuin wo onegai shimasu' },
+          { zh: '我要退房', ja: 'チェックアウトをお願いします', romaji: 'Chekku auto wo onegai shimasu' },
+          { zh: '請問WiFi密碼是？', ja: 'WiFiのパスワードは何ですか？', romaji: 'WiFi no pasuwaado wa nan desu ka?' },
+          { zh: '房間怎麼走？', ja: '部屋はどこですか？', romaji: 'Heya wa doko desu ka?' },
+          { zh: '可以寄放行李嗎？', ja: '荷物を預けられますか？', romaji: 'Nimotsu wo azukeraremasu ka?' },
+          { zh: '請幫我叫計程車', ja: 'タクシーを呼んでください', romaji: 'Takushii wo yonde kudasai' },
+          { zh: '早餐幾點開始？', ja: '朝食は何時からですか？', romaji: 'Choushoku wa nanji kara desu ka?' },
+          { zh: '有吹風機嗎？', ja: 'ドライヤーはありますか？', romaji: 'Doraiyaa wa arimasu ka?' },
+          { zh: '冷氣壞了', ja: 'エアコンが壊れています', romaji: 'Eakon ga kowarete imasu' },
+          { zh: '請打掃房間', ja: '部屋を掃除してください', romaji: 'Heya wo souji shite kudasai' },
+          { zh: '請給我毛巾', ja: 'タオルをください', romaji: 'Taoru wo kudasai' },
+          { zh: '請給我牙刷', ja: '歯ブラシをください', romaji: 'Haburashi wo kudasai' },
+          { zh: '熱水不熱', ja: 'お湯が出ません', romaji: 'Oyu ga demasen' },
+          { zh: '可以延後退房嗎？', ja: 'レイトチェックアウトできますか？', romaji: 'Reito chekku auto dekimasu ka?' },
+          { zh: '附近有便利商店嗎？', ja: '近くにコンビニはありますか？', romaji: 'Chikaku ni konbini wa arimasu ka?' }
+        ]
+      },
+      daily: {
+        name: '日常', icon: '👋',
+        cards: [
+          { zh: '你好', ja: 'こんにちは', romaji: 'Konnichiwa' },
+          { zh: '謝謝', ja: 'ありがとうございます', romaji: 'Arigatou gozaimasu' },
+          { zh: '不好意思', ja: 'すみません', romaji: 'Sumimasen' },
+          { zh: '對不起', ja: 'ごめんなさい', romaji: 'Gomen nasai' },
+          { zh: '請', ja: 'どうぞ', romaji: 'Douzo' },
+          { zh: '是的', ja: 'はい', romaji: 'Hai' },
+          { zh: '不是', ja: 'いいえ', romaji: 'Iie' },
+          { zh: '我不懂日文', ja: '日本語がわかりません', romaji: 'Nihongo ga wakarimasen' },
+          { zh: '請說慢一點', ja: 'ゆっくり話してください', romaji: 'Yukkuri hanashite kudasai' },
+          { zh: '請寫下來', ja: '書いてください', romaji: 'Kaite kudasai' },
+          { zh: '廁所在哪裡？', ja: 'トイレはどこですか？', romaji: 'Toire wa doko desu ka?' },
+          { zh: '等一下', ja: 'ちょっと待ってください', romaji: 'Chotto matte kudasai' },
+          { zh: '沒關係', ja: '大丈夫です', romaji: 'Daijoubu desu' },
+          { zh: '再見', ja: 'さようなら', romaji: 'Sayounara' }
+        ]
+      }
+    };
+
+    class App {
+      constructor() {
+        this.currentCategory = 'dining';
+        this.currentIndex = 0;
+        this.favorites = JSON.parse(localStorage.getItem('jp_favorites') || '[]');
+        this.searchQuery = '';
+        this.filteredCards = [];
+        this.isDarkMode = localStorage.getItem('jp_darkMode') !== 'false';
+        this.showingFavoritesOnly = false;
+      }
+      init() {
+        this.cacheElements();
+        this.bindEvents();
+        this.applyTheme();
+        this.renderCategories();
+        this.updateCards();
+        this.initTouch();
+      }
+      cacheElements() {
+        this.cardElement = document.querySelector('.card');
+        this.cardFront = document.querySelector('.card-front');
+        this.cardBack = document.querySelector('.card-back');
+        this.categoryTabs = document.querySelector('.category-tabs');
+        this.cardList = document.querySelector('.card-list');
+        this.searchInput = document.querySelector('.search-input');
+        this.favoriteBtn = document.querySelector('.favorite-btn');
+        this.prevBtn = document.querySelector('.prev-btn');
+        this.nextBtn = document.querySelector('.next-btn');
+        this.progressText = document.querySelector('.progress-text');
+        this.themeToggle = document.querySelector('.theme-toggle');
+        this.favFilterBtn = document.querySelector('.fav-filter-btn');
+        this.sidebar = document.querySelector('.sidebar');
+        this.overlay = document.querySelector('.overlay');
+        this.menuToggle = document.querySelector('.menu-toggle');
+        this.closeSidebar = document.querySelector('.close-sidebar');
+      }
+      bindEvents() {
+        this.searchInput.addEventListener('input', (e) => {
+          this.searchQuery = e.target.value.trim();
+          this.currentIndex = 0;
+          this.updateCards();
+        });
+        this.favoriteBtn.addEventListener('click', () => this.toggleFavorite());
+        this.prevBtn.addEventListener('click', () => this.prevCard());
+        this.nextBtn.addEventListener('click', () => this.nextCard());
+        this.themeToggle.addEventListener('click', () => this.toggleTheme());
+        this.favFilterBtn.addEventListener('click', () => this.toggleFavoriteFilter());
+        this.cardElement.addEventListener('click', () => this.cardElement.classList.toggle('flipped'));
+        // Sidebar
+        this.menuToggle.addEventListener('click', () => this.openSidebar());
+        this.closeSidebar.addEventListener('click', () => this.closeSidebarFn());
+        this.overlay.addEventListener('click', () => this.closeSidebarFn());
+        // Keyboard
+        document.addEventListener('keydown', (e) => {
+          if (e.target === this.searchInput) return;
+          if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); this.prevCard(); }
+          if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); this.nextCard(); }
+          if (e.key === ' ') { e.preventDefault(); this.cardElement.classList.toggle('flipped'); }
+          if (e.key === 'Escape') this.closeSidebarFn();
+        });
+      }
+      openSidebar() {
+        this.sidebar.classList.add('open');
+        this.overlay.classList.add('show');
+      }
+      closeSidebarFn() {
+        this.sidebar.classList.remove('open');
+        this.overlay.classList.remove('show');
+      }
+      initTouch() {
+        let startX = 0, startY = 0;
+        this.cardElement.addEventListener('touchstart', (e) => {
+          startX = e.touches[0].clientX;
+          startY = e.touches[0].clientY;
+        }, { passive: true });
+        this.cardElement.addEventListener('touchend', (e) => {
+          const diffX = e.changedTouches[0].clientX - startX;
+          const diffY = e.changedTouches[0].clientY - startY;
+          if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+            if (diffX < 0) this.nextCard();
+            else this.prevCard();
+          }
+        }, { passive: true });
+      }
+      renderCategories() {
+        const categories = Object.entries(cardsData);
+        this.categoryTabs.innerHTML = categories.map(([key, cat]) => `
+          <button class="category-tab ${key === this.currentCategory ? 'active' : ''}" data-category="${key}" title="${cat.name}">
+            ${cat.icon}
+          </button>
+        `).join('');
+        this.categoryTabs.querySelectorAll('.category-tab').forEach(tab => {
+          tab.addEventListener('click', () => {
+            this.currentCategory = tab.dataset.category;
+            this.currentIndex = 0;
+            this.searchQuery = '';
+            this.searchInput.value = '';
+            this.showingFavoritesOnly = false;
+            this.favFilterBtn.classList.remove('active');
+            this.updateCategories();
+            this.updateCards();
+          });
+        });
+      }
+      updateCategories() {
+        this.categoryTabs.querySelectorAll('.category-tab').forEach(tab => {
+          tab.classList.toggle('active', tab.dataset.category === this.currentCategory);
+        });
+      }
+      getFilteredCards() {
+        let cards = cardsData[this.currentCategory].cards.map((card, idx) => ({
+          ...card, id: `${this.currentCategory}-${idx}`, index: idx
+        }));
+        if (this.searchQuery) {
+          const query = this.searchQuery.toLowerCase();
+          cards = cards.filter(card => card.zh.includes(query) || card.ja.includes(query) || card.romaji.toLowerCase().includes(query));
+        }
+        if (this.showingFavoritesOnly) {
+          cards = cards.filter(card => this.favorites.includes(card.id));
+        }
+        return cards;
+      }
+      renderCardList() {
+        this.cardList.innerHTML = this.filteredCards.map((card, idx) => `
+          <div class="card-item ${idx === this.currentIndex ? 'active' : ''} ${this.favorites.includes(card.id) ? 'favorited' : ''}" data-index="${idx}">
+            <span class="card-item-fav">⭐</span>
+            <span class="card-item-text">${card.zh}</span>
+          </div>
+        `).join('');
+        this.cardList.querySelectorAll('.card-item').forEach(item => {
+          item.addEventListener('click', () => {
+            this.currentIndex = parseInt(item.dataset.index);
+            this.updateCardDisplay();
+            this.updateListActive();
+            if (window.innerWidth < 768) this.closeSidebarFn();
+          });
+        });
+        const activeItem = this.cardList.querySelector('.card-item.active');
+        if (activeItem) activeItem.scrollIntoView({ block: 'nearest' });
+      }
+      updateListActive() {
+        this.cardList.querySelectorAll('.card-item').forEach((item, idx) => {
+          item.classList.toggle('active', idx === this.currentIndex);
+        });
+        const activeItem = this.cardList.querySelector('.card-item.active');
+        if (activeItem) activeItem.scrollIntoView({ block: 'nearest' });
+      }
+      updateCardDisplay() {
+        this.cardElement.classList.remove('flipped');
+        if (this.filteredCards.length === 0) {
+          this.cardFront.innerHTML = `<div class="empty-state"><span class="empty-icon">🔍</span><p>找不到卡片</p></div>`;
+          this.cardBack.innerHTML = '';
+          this.progressText.textContent = '0/0';
+          this.favoriteBtn.classList.remove('active');
+          return;
+        }
+        if (this.currentIndex >= this.filteredCards.length) this.currentIndex = this.filteredCards.length - 1;
+        const card = this.filteredCards[this.currentIndex];
+        this.cardFront.innerHTML = `<span class="zh-text">${card.zh}</span><span class="hint">👆 點擊翻轉</span>`;
+        this.cardBack.innerHTML = `<span class="ja-text">${card.ja}</span><span class="romaji-text">${card.romaji}</span>`;
+        this.progressText.textContent = `${this.currentIndex + 1}/${this.filteredCards.length}`;
+        this.favoriteBtn.classList.toggle('active', this.favorites.includes(card.id));
+      }
+      updateCards() {
+        this.filteredCards = this.getFilteredCards();
+        this.renderCardList();
+        this.updateCardDisplay();
+      }
+      prevCard() {
+        if (this.filteredCards.length === 0) return;
+        this.currentIndex = (this.currentIndex - 1 + this.filteredCards.length) % this.filteredCards.length;
+        this.updateCardDisplay();
+        this.updateListActive();
+      }
+      nextCard() {
+        if (this.filteredCards.length === 0) return;
+        this.currentIndex = (this.currentIndex + 1) % this.filteredCards.length;
+        this.updateCardDisplay();
+        this.updateListActive();
+      }
+      toggleFavorite() {
+        if (this.filteredCards.length === 0) return;
+        const card = this.filteredCards[this.currentIndex];
+        const idx = this.favorites.indexOf(card.id);
+        if (idx === -1) this.favorites.push(card.id);
+        else this.favorites.splice(idx, 1);
+        localStorage.setItem('jp_favorites', JSON.stringify(this.favorites));
+        this.favoriteBtn.classList.toggle('active', idx === -1);
+        this.favoriteBtn.classList.add('pop');
+        setTimeout(() => this.favoriteBtn.classList.remove('pop'), 200);
+        const listItem = this.cardList.querySelectorAll('.card-item')[this.currentIndex];
+        if (listItem) listItem.classList.toggle('favorited', idx === -1);
+      }
+      toggleFavoriteFilter() {
+        this.showingFavoritesOnly = !this.showingFavoritesOnly;
+        this.favFilterBtn.classList.toggle('active', this.showingFavoritesOnly);
+        this.currentIndex = 0;
+        this.updateCards();
+      }
+      toggleTheme() {
+        this.isDarkMode = !this.isDarkMode;
+        localStorage.setItem('jp_darkMode', this.isDarkMode);
+        this.applyTheme();
+      }
+      applyTheme() {
+        document.body.classList.toggle('light-mode', !this.isDarkMode);
+        this.themeToggle.textContent = this.isDarkMode ? '☀️' : '🌙';
+      }
+    }
+    document.addEventListener('DOMContentLoaded', () => { new App().init(); });
+    // Register Service Worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(e => console.log('SW error:', e));
+    }
+  </script>
+</body>
+</html>
