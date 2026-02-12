@@ -35,324 +35,128 @@
       --glass-border: rgba(0, 0, 0, 0.1);
     }
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    html, body { 
-      height: 100%; 
-      overflow: hidden;
-      touch-action: manipulation;
-    }
+    html, body { height: 100%; overflow: hidden; touch-action: manipulation; }
     body {
       font-family: 'Noto Sans TC', 'Noto Sans JP', -apple-system, sans-serif;
       background: var(--bg-primary);
       color: var(--text-primary);
       transition: background 0.3s, color 0.3s;
     }
-    .app {
-      display: flex;
-      height: 100%;
-      height: 100dvh;
-      position: relative;
-    }
-    /* 遮罩 */
-    .overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.5);
-      z-index: 90;
-    }
+    .app { display: flex; height: 100%; height: 100dvh; position: relative; }
+    .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 90; }
     .overlay.show { display: block; }
     /* 左側列表 */
     .sidebar {
-      position: fixed;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      width: 240px;
-      background: var(--bg-list);
-      border-right: 1px solid var(--glass-border);
-      display: flex;
-      flex-direction: column;
-      z-index: 100;
-      transform: translateX(-100%);
-      transition: transform 0.3s ease;
+      position: fixed; left: 0; top: 0; bottom: 0; width: 240px;
+      background: var(--bg-list); border-right: 1px solid var(--glass-border);
+      display: flex; flex-direction: column; z-index: 100;
+      transform: translateX(-100%); transition: transform 0.3s ease;
     }
     .sidebar.open { transform: translateX(0); }
     @media (min-width: 768px) {
-      .sidebar {
-        position: relative;
-        transform: translateX(0);
-        width: 220px;
-      }
+      .sidebar { position: relative; transform: translateX(0); width: 220px; }
       .overlay { display: none !important; }
       .menu-toggle { display: none !important; }
     }
     .sidebar-header {
-      padding: 16px;
-      border-bottom: 1px solid var(--glass-border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      padding: 16px; border-bottom: 1px solid var(--glass-border);
+      display: flex; align-items: center; justify-content: space-between;
     }
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 1rem;
-      font-weight: 700;
-    }
+    .logo { display: flex; align-items: center; gap: 8px; font-size: 1rem; font-weight: 700; }
     .logo-icon { font-size: 1.25rem; }
-    .close-sidebar {
-      display: none;
-      background: none;
-      border: none;
-      font-size: 1.5rem;
-      color: var(--text-secondary);
-      cursor: pointer;
-    }
-    @media (max-width: 767px) {
-      .close-sidebar { display: block; }
-    }
-    .category-tabs {
-      display: flex;
-      padding: 8px;
-      gap: 4px;
-      border-bottom: 1px solid var(--glass-border);
-    }
+    .close-sidebar { display: none; background: none; border: none; font-size: 1.5rem; color: var(--text-secondary); cursor: pointer; }
+    @media (max-width: 767px) { .close-sidebar { display: block; } }
+    .category-tabs { display: flex; padding: 8px; gap: 4px; border-bottom: 1px solid var(--glass-border); }
     .category-tab {
-      flex: 1;
-      padding: 10px 4px;
-      background: transparent;
-      border: 1px solid var(--glass-border);
-      border-radius: 10px;
-      color: var(--text-secondary);
-      font-size: 1.2rem;
-      cursor: pointer;
-      transition: all 0.2s;
+      flex: 1; padding: 10px 4px; background: transparent; border: 1px solid var(--glass-border);
+      border-radius: 10px; color: var(--text-secondary); font-size: 1.2rem; cursor: pointer; transition: all 0.2s;
     }
-    .category-tab.active {
-      background: var(--accent-pink);
-      color: #fff;
-      border-color: var(--accent-pink);
-    }
-    .card-list {
-      flex: 1;
-      overflow-y: auto;
-      padding: 8px;
-      -webkit-overflow-scrolling: touch;
-    }
+    .category-tab.active { background: var(--accent-pink); color: #fff; border-color: var(--accent-pink); }
+    .card-list { flex: 1; overflow-y: auto; padding: 8px; -webkit-overflow-scrolling: touch; }
     .card-list::-webkit-scrollbar { width: 3px; }
     .card-list::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 2px; }
     .card-item {
-      padding: 14px 12px;
-      margin-bottom: 4px;
-      background: transparent;
-      border: 1px solid transparent;
-      border-radius: 12px;
-      cursor: pointer;
-      transition: all 0.15s;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      padding: 14px 12px; margin-bottom: 4px; background: transparent; border: 1px solid transparent;
+      border-radius: 12px; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 8px;
     }
     .card-item:active { transform: scale(0.98); }
-    .card-item.active {
-      background: var(--accent-pink);
-      color: #fff;
-      border-color: var(--accent-pink);
-    }
-    .card-item-text {
-      font-size: 0.95rem;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .card-item-fav {
-      font-size: 0.7rem;
-      opacity: 0;
-      flex-shrink: 0;
-    }
+    .card-item.active { background: var(--accent-pink); color: #fff; border-color: var(--accent-pink); }
+    .card-item-text { font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .card-item-fav { font-size: 0.7rem; opacity: 0; flex-shrink: 0; }
     .card-item.favorited .card-item-fav { opacity: 1; }
     /* 右側主區域 */
     .main {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      padding: 12px;
-      padding-top: env(safe-area-inset-top, 12px);
-      padding-bottom: env(safe-area-inset-bottom, 12px);
-      overflow: hidden;
-      min-width: 0;
+      flex: 1; display: flex; flex-direction: column; padding: 12px;
+      padding-top: env(safe-area-inset-top, 12px); padding-bottom: env(safe-area-inset-bottom, 12px);
+      overflow: hidden; min-width: 0;
     }
-    .main-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 12px;
-    }
+    .main-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
     .menu-toggle {
-      background: var(--bg-card);
-      border: 1px solid var(--glass-border);
-      border-radius: 10px;
-      width: 44px;
-      height: 44px;
-      font-size: 1.3rem;
-      cursor: pointer;
-      flex-shrink: 0;
+      background: var(--bg-card); border: 1px solid var(--glass-border); border-radius: 10px;
+      width: 44px; height: 44px; font-size: 1.3rem; cursor: pointer; flex-shrink: 0;
     }
-    .search-container {
-      position: relative;
-      flex: 1;
-      min-width: 0;
-    }
-    .search-icon {
-      position: absolute;
-      left: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 0.9rem;
-      opacity: 0.5;
-    }
+    .search-container { position: relative; flex: 1; min-width: 0; }
+    .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 0.9rem; opacity: 0.5; }
     .search-input {
-      width: 100%;
-      padding: 12px 12px 12px 38px;
-      background: var(--bg-card);
-      border: 1px solid var(--glass-border);
-      border-radius: 12px;
-      color: var(--text-primary);
-      font-size: 1rem;
-      font-family: inherit;
+      width: 100%; padding: 12px 12px 12px 38px; background: var(--bg-card);
+      border: 1px solid var(--glass-border); border-radius: 12px;
+      color: var(--text-primary); font-size: 1rem; font-family: inherit;
     }
     .search-input::placeholder { color: var(--text-secondary); }
     .search-input:focus { outline: none; border-color: var(--accent-pink); }
-    .header-actions {
-      display: flex;
-      gap: 6px;
-      flex-shrink: 0;
-    }
+    .header-actions { display: flex; gap: 6px; flex-shrink: 0; }
     .icon-btn {
-      background: var(--bg-card);
-      border: 1px solid var(--glass-border);
-      border-radius: 10px;
-      width: 44px;
-      height: 44px;
-      font-size: 1.2rem;
-      cursor: pointer;
-      transition: all 0.15s;
+      background: var(--bg-card); border: 1px solid var(--glass-border); border-radius: 10px;
+      width: 44px; height: 44px; font-size: 1.2rem; cursor: pointer; transition: all 0.15s;
     }
     .icon-btn:active { transform: scale(0.95); }
     .icon-btn.active { background: var(--accent-pink); border-color: var(--accent-pink); }
-    /* 卡片區域 */
-    .card-container {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      perspective: 1000px;
-      padding: 10px;
-      min-height: 0;
+    /* 雙卡片區域 */
+    .cards-container {
+      flex: 1; display: flex; flex-direction: column; gap: 12px; padding: 10px; min-height: 0;
     }
-    .card {
-      width: 100%;
-      max-width: 400px;
-      aspect-ratio: 3/2;
-      position: relative;
-      transform-style: preserve-3d;
-      transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-      cursor: pointer;
+    .card-jp, .card-zh {
+      flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 20px; background: var(--bg-card); border: 1px solid var(--glass-border);
+      border-radius: 20px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); min-height: 0;
     }
-    .card.flipped { transform: rotateY(180deg); }
-    .card-face {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-      background: var(--bg-card);
-      border: 1px solid var(--glass-border);
-      border-radius: 20px;
-      backface-visibility: hidden;
-      -webkit-backface-visibility: hidden;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+    .card-jp {
+      transform: rotate(180deg);
+      background: linear-gradient(135deg, var(--accent-pink) 0%, #c73e54 100%);
+      border-color: var(--accent-pink);
     }
-    .card-back { transform: rotateY(180deg); }
-    .zh-text {
-      font-size: clamp(1.5rem, 6vw, 2.5rem);
-      font-weight: 700;
-      text-align: center;
-      line-height: 1.3;
-    }
-    .hint {
-      position: absolute;
-      bottom: 16px;
-      font-size: 0.85rem;
-      color: var(--text-secondary);
+    .card-label {
+      font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;
+      opacity: 0.7; margin-bottom: 8px;
     }
     .ja-text {
-      font-size: clamp(1.3rem, 5vw, 2rem);
-      font-weight: 700;
-      text-align: center;
-      line-height: 1.4;
-      color: var(--accent-pink);
+      font-size: clamp(1.4rem, 5vw, 2.2rem); font-weight: 700; text-align: center;
+      line-height: 1.3; color: #fff;
     }
     .romaji-text {
-      margin-top: 12px;
-      font-size: clamp(0.9rem, 3vw, 1.1rem);
-      color: var(--text-secondary);
-      text-align: center;
+      margin-top: 8px; font-size: clamp(0.85rem, 2.5vw, 1rem);
+      color: rgba(255,255,255,0.8); text-align: center;
     }
-    .empty-state {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 10px;
-      color: var(--text-secondary);
+    .zh-text {
+      font-size: clamp(1.4rem, 5vw, 2.2rem); font-weight: 700; text-align: center; line-height: 1.3;
     }
+    .empty-state { display: flex; flex-direction: column; align-items: center; gap: 10px; color: var(--text-secondary); }
     .empty-icon { font-size: 2.5rem; }
     /* 底部控制 */
-    .card-controls {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 16px;
-      padding: 16px 0;
-    }
+    .card-controls { display: flex; align-items: center; justify-content: center; gap: 16px; padding: 12px 0; }
     .nav-btn {
-      background: var(--bg-card);
-      border: 1px solid var(--glass-border);
-      border-radius: 50%;
-      width: 50px;
-      height: 50px;
-      font-size: 1.2rem;
-      color: var(--text-primary);
-      cursor: pointer;
-      transition: all 0.15s;
+      background: var(--bg-card); border: 1px solid var(--glass-border); border-radius: 50%;
+      width: 50px; height: 50px; font-size: 1.2rem; color: var(--text-primary); cursor: pointer; transition: all 0.15s;
     }
     .nav-btn:active { transform: scale(0.92); }
     .favorite-btn {
-      background: var(--bg-card);
-      border: 1px solid var(--glass-border);
-      border-radius: 50%;
-      width: 50px;
-      height: 50px;
-      font-size: 1.3rem;
-      cursor: pointer;
-      transition: all 0.15s;
+      background: var(--bg-card); border: 1px solid var(--glass-border); border-radius: 50%;
+      width: 50px; height: 50px; font-size: 1.3rem; cursor: pointer; transition: all 0.15s;
       filter: grayscale(1) opacity(0.5);
     }
-    .favorite-btn.active { 
-      filter: none; 
-      background: var(--accent-gold); 
-      border-color: var(--accent-gold); 
-    }
+    .favorite-btn.active { filter: none; background: var(--accent-gold); border-color: var(--accent-gold); }
     .favorite-btn.pop { transform: scale(1.15); }
-    .progress-text {
-      font-size: 0.95rem;
-      color: var(--text-secondary);
-      min-width: 55px;
-      text-align: center;
-    }
+    .progress-text { font-size: 0.95rem; color: var(--text-secondary); min-width: 55px; text-align: center; }
   </style>
 </head>
 <body>
@@ -360,10 +164,7 @@
     <div class="overlay"></div>
     <aside class="sidebar">
       <div class="sidebar-header">
-        <div class="logo">
-          <span class="logo-icon">🇯🇵</span>
-          <span>日旅翻譯卡片</span>
-        </div>
+        <div class="logo"><span class="logo-icon">🇯🇵</span><span>日旅翻譯卡片</span></div>
         <button class="close-sidebar" aria-label="關閉">✕</button>
       </div>
       <nav class="category-tabs"></nav>
@@ -381,16 +182,15 @@
           <button class="icon-btn theme-toggle" aria-label="切換主題">☀️</button>
         </div>
       </div>
-      <div class="card-container">
-        <div class="card">
-          <div class="card-face card-front">
-            <span class="zh-text">載入中...</span>
-            <span class="hint">👆 點擊翻轉</span>
-          </div>
-          <div class="card-face card-back">
-            <span class="ja-text"></span>
-            <span class="romaji-text"></span>
-          </div>
+      <div class="cards-container">
+        <div class="card-jp">
+          <div class="card-label">🇯🇵 給店員看</div>
+          <span class="ja-text">こんにちは</span>
+          <span class="romaji-text">Konnichiwa</span>
+        </div>
+        <div class="card-zh">
+          <div class="card-label">🇹🇼 自己看</div>
+          <span class="zh-text">你好</span>
         </div>
       </div>
       <div class="card-controls">
@@ -512,9 +312,9 @@
         this.initTouch();
       }
       cacheElements() {
-        this.cardElement = document.querySelector('.card');
-        this.cardFront = document.querySelector('.card-front');
-        this.cardBack = document.querySelector('.card-back');
+        this.jaText = document.querySelector('.ja-text');
+        this.romajiText = document.querySelector('.romaji-text');
+        this.zhText = document.querySelector('.zh-text');
         this.categoryTabs = document.querySelector('.category-tabs');
         this.cardList = document.querySelector('.card-list');
         this.searchInput = document.querySelector('.search-input');
@@ -527,7 +327,8 @@
         this.sidebar = document.querySelector('.sidebar');
         this.overlay = document.querySelector('.overlay');
         this.menuToggle = document.querySelector('.menu-toggle');
-        this.closeSidebar = document.querySelector('.close-sidebar');
+        this.closeSidebarBtn = document.querySelector('.close-sidebar');
+        this.cardsContainer = document.querySelector('.cards-container');
       }
       bindEvents() {
         this.searchInput.addEventListener('input', (e) => {
@@ -540,49 +341,35 @@
         this.nextBtn.addEventListener('click', () => this.nextCard());
         this.themeToggle.addEventListener('click', () => this.toggleTheme());
         this.favFilterBtn.addEventListener('click', () => this.toggleFavoriteFilter());
-        this.cardElement.addEventListener('click', () => this.cardElement.classList.toggle('flipped'));
-        // Sidebar
         this.menuToggle.addEventListener('click', () => this.openSidebar());
-        this.closeSidebar.addEventListener('click', () => this.closeSidebarFn());
-        this.overlay.addEventListener('click', () => this.closeSidebarFn());
-        // Keyboard
+        this.closeSidebarBtn.addEventListener('click', () => this.closeSidebar());
+        this.overlay.addEventListener('click', () => this.closeSidebar());
         document.addEventListener('keydown', (e) => {
           if (e.target === this.searchInput) return;
           if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); this.prevCard(); }
           if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); this.nextCard(); }
-          if (e.key === ' ') { e.preventDefault(); this.cardElement.classList.toggle('flipped'); }
-          if (e.key === 'Escape') this.closeSidebarFn();
+          if (e.key === 'Escape') this.closeSidebar();
         });
       }
-      openSidebar() {
-        this.sidebar.classList.add('open');
-        this.overlay.classList.add('show');
-      }
-      closeSidebarFn() {
-        this.sidebar.classList.remove('open');
-        this.overlay.classList.remove('show');
-      }
+      openSidebar() { this.sidebar.classList.add('open'); this.overlay.classList.add('show'); }
+      closeSidebar() { this.sidebar.classList.remove('open'); this.overlay.classList.remove('show'); }
       initTouch() {
         let startX = 0, startY = 0;
-        this.cardElement.addEventListener('touchstart', (e) => {
-          startX = e.touches[0].clientX;
-          startY = e.touches[0].clientY;
+        this.cardsContainer.addEventListener('touchstart', (e) => {
+          startX = e.touches[0].clientX; startY = e.touches[0].clientY;
         }, { passive: true });
-        this.cardElement.addEventListener('touchend', (e) => {
+        this.cardsContainer.addEventListener('touchend', (e) => {
           const diffX = e.changedTouches[0].clientX - startX;
           const diffY = e.changedTouches[0].clientY - startY;
           if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
-            if (diffX < 0) this.nextCard();
-            else this.prevCard();
+            if (diffX < 0) this.nextCard(); else this.prevCard();
           }
         }, { passive: true });
       }
       renderCategories() {
         const categories = Object.entries(cardsData);
         this.categoryTabs.innerHTML = categories.map(([key, cat]) => `
-          <button class="category-tab ${key === this.currentCategory ? 'active' : ''}" data-category="${key}" title="${cat.name}">
-            ${cat.icon}
-          </button>
+          <button class="category-tab ${key === this.currentCategory ? 'active' : ''}" data-category="${key}" title="${cat.name}">${cat.icon}</button>
         `).join('');
         this.categoryTabs.querySelectorAll('.category-tab').forEach(tab => {
           tab.addEventListener('click', () => {
@@ -627,7 +414,7 @@
             this.currentIndex = parseInt(item.dataset.index);
             this.updateCardDisplay();
             this.updateListActive();
-            if (window.innerWidth < 768) this.closeSidebarFn();
+            if (window.innerWidth < 768) this.closeSidebar();
           });
         });
         const activeItem = this.cardList.querySelector('.card-item.active');
@@ -641,18 +428,19 @@
         if (activeItem) activeItem.scrollIntoView({ block: 'nearest' });
       }
       updateCardDisplay() {
-        this.cardElement.classList.remove('flipped');
         if (this.filteredCards.length === 0) {
-          this.cardFront.innerHTML = `<div class="empty-state"><span class="empty-icon">🔍</span><p>找不到卡片</p></div>`;
-          this.cardBack.innerHTML = '';
+          this.jaText.textContent = '找不到卡片';
+          this.romajiText.textContent = '';
+          this.zhText.textContent = '🔍';
           this.progressText.textContent = '0/0';
           this.favoriteBtn.classList.remove('active');
           return;
         }
         if (this.currentIndex >= this.filteredCards.length) this.currentIndex = this.filteredCards.length - 1;
         const card = this.filteredCards[this.currentIndex];
-        this.cardFront.innerHTML = `<span class="zh-text">${card.zh}</span><span class="hint">👆 點擊翻轉</span>`;
-        this.cardBack.innerHTML = `<span class="ja-text">${card.ja}</span><span class="romaji-text">${card.romaji}</span>`;
+        this.jaText.textContent = card.ja;
+        this.romajiText.textContent = card.romaji;
+        this.zhText.textContent = card.zh;
         this.progressText.textContent = `${this.currentIndex + 1}/${this.filteredCards.length}`;
         this.favoriteBtn.classList.toggle('active', this.favorites.includes(card.id));
       }
@@ -703,7 +491,6 @@
       }
     }
     document.addEventListener('DOMContentLoaded', () => { new App().init(); });
-    // Register Service Worker
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js').catch(e => console.log('SW error:', e));
     }
